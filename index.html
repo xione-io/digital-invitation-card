@@ -1,0 +1,392 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap" rel="stylesheet">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Image with Circles and Card Reveal</title>
+  <style>
+    html, body {
+      margin: 0;
+      height: 100%;
+      overflow: hidden;
+      background: url('images/background.png') no-repeat center center fixed;
+      background-size: cover;
+    }
+
+    .center-line {
+      position: fixed;
+      top: 0;
+      left: 50%;
+      width: 2px;
+      height: 100vh;
+      background-color: red;
+      z-index: 9999;
+      pointer-events: none;
+      opacity: 0;
+    }
+
+    .light-overlay {
+      position: fixed;
+      top: 0; left: 0;
+      width: 100vw;
+      height: 100vh;
+      background: url('https://media0.giphy.com/media/v1.Y2lkPTc5MGI3NjExanI5czF3cWlvODJwZ3RodDJvazA4cDNtanVzYm1odXg1OXVmeG15dSZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9Zw/d2Z6JAEalZQyjUODoY/giphy.gif') no-repeat center center;
+      background-size: cover;
+      opacity: 0.4;
+      mix-blend-mode: screen;
+      pointer-events: none;
+      z-index: 0;
+      animation: moveLight 30s linear infinite;
+    }
+
+    @keyframes moveLight {
+      0% { background-position: 0 0; }
+      100% { background-position: 100% 100%; }
+    }
+
+    .image-wrapper {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+      width: 100vw;
+      overflow: hidden;
+      z-index: 1;
+    }
+
+    #mainImage {
+      max-width: 1240px;
+      max-height: 100vh;
+      height: auto;
+      width: 100%;
+      display: block;
+      box-shadow: 0px 0px 80px rgba(0, 0, 0, 1);
+    }
+
+    #mainImageWrapper {
+      position: relative;
+      max-width: 1240px;
+      max-height: 100vh;
+      width: auto;
+      height: auto;
+    }
+
+    .circle-overlay {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 1240px;
+      height: 1748px;
+      pointer-events: auto;
+      z-index: 11;
+      cursor: pointer;
+    }
+
+    .circle-overlay.disabled {
+      pointer-events: none;
+    }
+
+    .circle {
+      position: absolute;
+      border-radius: 50%;
+    }
+
+    .card-panels {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100vw;
+      height: 100vh;
+      overflow: hidden;
+      pointer-events: none;
+      z-index: 4;
+    }
+
+    .card-img {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      height: 100vh;
+      width: auto;
+      min-width: 100vw;
+      object-fit: cover;
+      object-position: center center;
+      transition: transform 1.5s ease-in;
+      pointer-events: none;
+    }
+
+    .left-panel {
+      transform: translate(-83.3%, -50%);
+      z-index: 2;
+    }
+
+    .right-panel {
+      transform: translate(-13.5%, -50%);
+      z-index: 1;
+    }
+
+    .card-panels.open .left-panel {
+      transform: translate(-141%, -50%);
+    }
+
+    .card-panels.open .right-panel {
+      transform: translate(41%, -50%);
+    }
+
+    .card-button {
+      position: absolute;
+      top: 61.5%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      width: 110px;
+      height: 110px;
+      background-color: rgba(0, 255, 255, 0.4);
+      border-radius: 50%;
+      pointer-events: auto;
+      z-index: 5;
+      opacity: 0;
+    }
+
+    .centered-img {
+      position: fixed;
+      top: 30%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      max-width: 350px;
+      height: auto;
+      z-index: 9;
+      transition: opacity 0.5s ease;
+    }
+
+    .centered-img.hidden {
+      opacity: 0;
+      pointer-events: none;
+    }
+
+    .popup-image {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      max-width: 90%;
+      max-height: 90%;
+      height: auto;
+      box-shadow: 0 0 40px rgba(0, 0, 0, 0.7);
+      display: none;
+      z-index: 20;
+      animation: popupFlyIn 0.4s ease-out;
+    }
+
+    @keyframes popupFlyIn {
+      0% {
+        transform: translate(-50%, -40%);
+        opacity: 0;
+      }
+      100% {
+        transform: translate(-50%, -50%);
+        opacity: 1;
+      }
+    }
+
+    @keyframes popupFlyOut {
+      0% {
+        transform: translate(-50%, -50%);
+        opacity: 1;
+      }
+      100% {
+        transform: translate(-50%, -40%);
+        opacity: 0;
+      }
+    }
+
+    .popup-backdrop {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100vw;
+      height: 100vh;
+      backdrop-filter: blur(6px) brightness(60%);
+      background-color: rgba(0, 0, 0, 0.2);
+      z-index: 19;
+      opacity: 0;
+      transition: opacity 0.4s ease;
+      pointer-events: none;
+      display: none; /* Important to prevent initial blur flicker */
+    }
+
+    .popup-backdrop.show {
+      display: block;
+    }
+
+    .popup-backdrop.visible {
+      opacity: 1;
+      pointer-events: auto;
+    }
+  </style>
+</head>
+<body>
+  <div class="center-line"></div>
+  <div class="light-overlay"></div>
+
+  <div class="card-panels">
+    <img src="images/left-panel.png" class="card-img left-panel" />
+    <img src="images/right-panel.png" class="card-img right-panel" />
+    <div class="card-button" onclick="revealCard()"></div>
+    <svg class="curved-text-above" width="200" height="120" viewBox="0 0 300 180"
+        style="position: absolute; top: calc(61.5% - 95px); left: 50%; transform: translateX(-50%); z-index: 6; pointer-events: none;">
+      <defs>
+        <path id="reveal-curve" d="M 50,120 A 103,103 0 0,1 250,120" />
+      </defs>
+      <text font-size="16" fill="white" font-family="Courier New" letter-spacing="2" style="text-shadow: 0px 0px 5px rgba(0,0,0,0.8);">
+        <textPath href="#reveal-curve" startOffset="50%" text-anchor="middle">
+          TAP TO REVEAL
+        </textPath>
+      </text>
+    </svg>
+  </div>
+
+  <img id="centerImage" src="images/cassy.png" alt="Centered Image" class="centered-img" />
+
+  <div class="image-wrapper">
+    <div id="mainImageWrapper">
+      <img id="mainImage" src="images/main.png" width="1240" height="1748" />
+      <div id="popupBackdrop" class="popup-backdrop"></div>
+      <img id="popup1" class="popup-image" src="images/1.png" />
+      <img id="popup2" class="popup-image" src="images/3.png" />
+      <img id="popup3" class="popup-image" src="images/4.png" />
+      <img id="popup4" class="popup-image" src="images/2.png" />
+    </div>
+  </div>
+
+  <div class="circle-overlay disabled" id="circleOverlay">
+    <div id="circle1" class="circle" style="top: 1429px; left: 105px; width: 181px; height: 181px; background-color: rgba(255, 0, 0, 0);" onclick="showPopup(1)"></div>
+    <div id="circle2" class="circle" style="top: 1380px; left: 398px; width: 150px; height: 150px; background-color: rgba(76, 0, 255, 0);" onclick="showPopup(2)"></div>
+    <div id="circle3" class="circle" style="top: 1435px; left: 660px; width: 181px; height: 181px; background-color: rgba(0, 255, 76, 0);" onclick="showPopup(3)"></div>
+    <div id="circle4" class="circle" style="top: 1380px; left: 940px; width: 170px; height: 170px; background-color: rgba(229, 255, 0, 0);" onclick="showPopup(4)"></div>
+  </div>
+
+  <script>
+    const image = document.getElementById("mainImage");
+    const overlay = document.getElementById("circleOverlay");
+    const popupBackdrop = document.getElementById("popupBackdrop");
+
+    function positionOverlay() {
+      const rect = image.getBoundingClientRect();
+      const scaleX = rect.width / 1240;
+      const scaleY = rect.height / 1748;
+
+      overlay.style.left = `${rect.left}px`;
+      overlay.style.top = `${rect.top}px`;
+      overlay.style.width = `${rect.width}px`;
+      overlay.style.height = `${rect.height}px`;
+      overlay.style.transform = `scale(${scaleX}, ${scaleY})`;
+      overlay.style.transformOrigin = 'top left';
+    }
+
+    window.addEventListener('load', positionOverlay);
+    window.addEventListener('resize', positionOverlay);
+    window.addEventListener('scroll', positionOverlay);
+
+    let confettiFired = false;
+
+    function revealCard() {
+      document.querySelector('.card-panels').classList.add('open');
+      document.querySelector('.card-button').classList.add('hidden');
+      document.querySelector('.curved-text-above').style.opacity = '0';
+      document.getElementById('centerImage').classList.add('hidden');
+      hideAllPopups();
+      document.getElementById('circleOverlay').classList.remove('disabled');
+
+      if (!confettiFired) {
+        fireConfetti();
+        confettiFired = true;
+      }
+    }
+
+    function fireConfetti() {
+      confetti({
+        particleCount: 170,
+        spread: 80,
+        origin: { y: 0.6 },
+        colors: ['#136add', '#15aeea', '#c6d5ed', '#86c6e6']
+      });
+    }
+
+    const popupImages = {
+      circle1: document.getElementById('popup1'),
+      circle2: document.getElementById('popup2'),
+      circle3: document.getElementById('popup3'),
+      circle4: document.getElementById('popup4')
+    };
+
+    function hidePopupWithAnimation(popup) {
+      popup.style.animation = 'popupFlyOut 0.4s ease-in';
+      setTimeout(() => {
+        popup.style.display = 'none';
+        popup.style.animation = '';
+      }, 400);
+    }
+
+    function hideAllPopups() {
+      for (let i = 1; i <= 4; i++) {
+        const popup = document.getElementById(`popup${i}`);
+        if (popup.style.display === 'block') {
+          hidePopupWithAnimation(popup);
+        }
+      }
+      popupBackdrop.classList.remove('visible');
+      setTimeout(() => {
+        popupBackdrop.classList.remove('show');
+      }, 400);
+    }
+
+    function showPopup(num) {
+      for (let i = 1; i <= 4; i++) {
+        if (i === num) continue;
+        const otherPopup = document.getElementById(`popup${i}`);
+        if (otherPopup.style.display === 'block') {
+          hidePopupWithAnimation(otherPopup);
+        }
+      }
+
+      const popup = document.getElementById(`popup${num}`);
+      if (popup) {
+        popup.style.display = 'block';
+        popup.style.animation = 'none';
+        popup.offsetHeight; // force reflow
+        popup.style.animation = 'popupFlyIn 0.4s ease-out';
+        popupBackdrop.classList.add('show');
+        requestAnimationFrame(() => {
+          popupBackdrop.classList.add('visible');
+        });
+      }
+    }
+
+    document.getElementById('circle1').addEventListener('click', () => showPopup(1));
+    document.getElementById('circle2').addEventListener('click', () => showPopup(2));
+    document.getElementById('circle3').addEventListener('click', () => showPopup(3));
+    document.getElementById('circle4').addEventListener('click', () => showPopup(4));
+
+    Object.values(popupImages).forEach(img => {
+      img.addEventListener('click', () => {
+        hidePopupWithAnimation(img);
+        popupBackdrop.classList.remove('visible');
+        setTimeout(() => {
+          popupBackdrop.classList.remove('show');
+        }, 400);
+      });
+    });
+
+    document.addEventListener('click', (e) => {
+      const isPopup = Object.values(popupImages).some(img => img.contains(e.target));
+      const isCircle = e.target.classList.contains('circle');
+
+      if (!isPopup && !isCircle) {
+        hideAllPopups();
+      }
+    });
+  </script>
+  <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+</body>
+</html>
